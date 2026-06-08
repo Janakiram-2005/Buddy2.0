@@ -257,19 +257,16 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 title: Text(student['fullName']),
                 subtitle: Text(student['email'] ?? student['phone'] ?? ''),
                 trailing: isPending
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () => _approveStudent(studentId, ref),
-                            child: const Text('APPROVE'),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-                            onPressed: () => _removeStudent(context, studentId, student['fullName'], ref),
-                          ),
-                        ],
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'Pending',
+                          style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 11),
+                        ),
                       )
                     : Row(
                         mainAxisSize: MainAxisSize.min,
@@ -307,11 +304,34 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 _buildStudentExpandedDetails(context, studentId),
                 const Divider(height: 1),
               ],
+              if (isPending)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0, right: 12.0, top: 4.0),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    alignment: WrapAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.check_circle_outline, size: 16, color: Colors.green),
+                        label: const Text('Approve', style: TextStyle(color: Colors.green)),
+                        onPressed: () => _approveStudent(studentId, ref),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                        label: const Text('Remove Request', style: TextStyle(color: Colors.red)),
+                        onPressed: () => _removeStudent(context, studentId, student['fullName'], ref),
+                      ),
+                    ],
+                  ),
+                ),
               if (!isPending)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0, right: 8.0, top: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  padding: const EdgeInsets.only(bottom: 8.0, right: 12.0, top: 4.0),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    alignment: WrapAlignment.end,
                     children: [
                       TextButton.icon(
                         icon: const Icon(Icons.calendar_today_outlined, size: 16),

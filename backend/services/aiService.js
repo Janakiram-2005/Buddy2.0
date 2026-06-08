@@ -158,3 +158,37 @@ exports.analyticsSummary = async (metrics) => {
     ];
   }
 };
+
+exports.chatWithAI = async (message, imageBase64, history = []) => {
+  try {
+    if (!generativeModel) throw new Error('Vertex AI model not initialized');
+    
+    const parts = [];
+    if (imageBase64) {
+      const base64Data = imageBase64.split(',')[1] || imageBase64;
+      const mimeType = imageBase64.split(';')[0].split(':')[1] || 'image/jpeg';
+      parts.push({
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType
+        }
+      });
+    }
+    parts.push({ text: message });
+
+    let promptParts = [];
+    if (history.length > 0) {
+      promptParts.push({ text: "Conversation history so far for context:\n" + history.map(h => `${h.role}: ${h.text}`).join('\n') + "\n\n" });
+    }
+    promptParts = [...promptParts, ...parts];
+
+    const resp = await generativeModel.generateContent({ contents: [{ role: 'user', parts: promptParts }] });
+    const replyText = resp.response.candidates[0].content.parts[0].text;
+    return { reply: replyText };
+  } catch (error) {
+    console.warn('Vertex AI chat failed, falling back to mock reply:', error.message);
+    return {
+      reply: `I received your message: "${message}". (Mock response - Gemini AI service currently offline.)`
+    };
+  }
+};

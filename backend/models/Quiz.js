@@ -17,6 +17,7 @@ const quizSchema = new mongoose.Schema({
     }
   ],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  assignedStudentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   isAiGenerated: { type: Boolean, default: false }
 }, { timestamps: true });
 

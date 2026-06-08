@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../../core/network/api_client.dart';
 import '../../widgets/app_drawer.dart';
 import '../student/quiz_list_screen.dart';
+import 'admin_dashboard.dart';
 
 class QuizManagementScreen extends ConsumerStatefulWidget {
   const QuizManagementScreen({super.key});
@@ -24,6 +25,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
   String _aiDiagrams = 'without diagrams';
   String _aiStyle = 'statement type';
   String _aiFormat = 'mcq\'s';
+  String? _aiSelectedStudentId;
 
   // Manual Form state
   final _titleController = TextEditingController();
@@ -32,6 +34,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
   String _difficulty = 'Medium';
   int _timeLimit = 15;
   List<Map<String, dynamic>> _manualQuestions = [];
+  String? _manualSelectedStudentId;
 
   @override
   void dispose() {
@@ -135,6 +138,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                     'timeLimit': 15,
                     'questions': questions,
                     'isAiGenerated': true,
+                    'assignedStudentId': _aiSelectedStudentId,
                   });
                   Fluttertoast.showToast(msg: "AI Quiz Published successfully!", backgroundColor: Colors.green);
                   ref.invalidate(studentQuizzesProvider);
@@ -277,6 +281,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
         'timeLimit': _timeLimit,
         'questions': _manualQuestions,
         'isAiGenerated': false,
+        'assignedStudentId': _manualSelectedStudentId,
       });
 
       Fluttertoast.showToast(msg: "Manual Quiz Published Successfully!", backgroundColor: Colors.green);
@@ -295,6 +300,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final quizzesAsync = ref.watch(studentQuizzesProvider);
+    final studentsAsync = ref.watch(studentsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Quizzes')),
@@ -306,9 +312,9 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
           final mainForm = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildAiGeneratorCard(),
+              _buildAiGeneratorCard(studentsAsync),
               const SizedBox(height: 16),
-              _buildManualCreatorCard(),
+              _buildManualCreatorCard(studentsAsync),
             ],
           );
 
@@ -331,8 +337,18 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                           child: ListTile(
                             leading: Icon(q['isAiGenerated'] == true ? Icons.auto_awesome_outlined : Icons.quiz_outlined),
                             title: Text(q['title'] ?? ''),
-                            subtitle: Text('${q['subject']} • ${q['topic']}'),
-                            trailing: Text('${(q['questions'] as List?)?.length ?? 0} Qs'),
+                            subtitle: Text('${q['subject']} • ${q['topic']}${q['assignedStudentId'] is Map ? ' (Target: ${q['assignedStudentId']['fullName']})' : ' (Global)'}'),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('${(q['questions'] as List?)?.length ?? 0} Qs'),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                  onPressed: () => _deleteQuiz(q['_id'], q['title'] ?? 'Quiz', ref),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -371,7 +387,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
     );
   }
 
-  Widget _buildAiGeneratorCard() {
+  Widget _buildAiGeneratorCard(AsyncValue<List<dynamic>> studentsAsync) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -448,6 +464,33 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
               items: ['mixed numerical', 'statement type'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
               onChanged: (val) => setState(() => _aiStyle = val!),
             ),
+            const SizedBox(height: 12),
+            studentsAsync.when(
+              data: (students) {
+                final approved = students.where((s) => s['status'] == 'Approved').toList();
+                return DropdownButtonFormField<String?>(
+                  value: _aiSelectedStudentId,
+                  decoration: const InputDecoration(
+                    labelText: 'Target Student (Optional)',
+                    border: OutlineInputBorder(),
+                    helperText: 'Leave empty to assign to all students',
+                  ),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('All Students (Global)'),
+                    ),
+                    ...approved.map((s) => DropdownMenuItem<String?>(
+                      value: s['_id'],
+                      child: Text(s['fullName']),
+                    )),
+                  ],
+                  onChanged: (val) => setState(() => _aiSelectedStudentId = val),
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('Error loading students: $e'),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _isGenerating ? null : _generateQuizAI,
@@ -466,7 +509,7 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
     );
   }
 
-  Widget _buildManualCreatorCard() {
+  Widget _buildManualCreatorCard(AsyncValue<List<dynamic>> studentsAsync) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -527,6 +570,33 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            studentsAsync.when(
+              data: (students) {
+                final approved = students.where((s) => s['status'] == 'Approved').toList();
+                return DropdownButtonFormField<String?>(
+                  value: _manualSelectedStudentId,
+                  decoration: const InputDecoration(
+                    labelText: 'Target Student (Optional)',
+                    border: OutlineInputBorder(),
+                    helperText: 'Leave empty to assign to all students',
+                  ),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('All Students (Global)'),
+                    ),
+                    ...approved.map((s) => DropdownMenuItem<String?>(
+                      value: s['_id'],
+                      child: Text(s['fullName']),
+                    )),
+                  ],
+                  onChanged: (val) => setState(() => _manualSelectedStudentId = val),
+                );
+              },
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('Error loading students: $e'),
+            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -574,5 +644,33 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _deleteQuiz(String id, String title, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Quiz?'),
+        content: Text('Are you sure you want to permanently delete "$title" and all student results for it?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('DELETE'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _api.dio.delete('/quizzes/$id');
+        Fluttertoast.showToast(msg: "Quiz deleted successfully!", backgroundColor: Colors.green);
+        ref.invalidate(studentQuizzesProvider);
+      } catch (e) {
+        Fluttertoast.showToast(msg: "Failed to delete quiz: $e", backgroundColor: Colors.red);
+      }
+    }
   }
 }

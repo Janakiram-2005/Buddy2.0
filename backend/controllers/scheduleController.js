@@ -28,13 +28,16 @@ exports.updateScheduleStatus = async (req, res) => {
     const schedule = await Schedule.findById(req.params.id);
     if (!schedule) return res.status(404).json({ message: 'Schedule not found' });
 
-    // Only the assigned student can update their own schedule
-    if (schedule.studentId.toString() !== req.user._id.toString()) {
+    // Only the assigned student or an Admin can update
+    if (req.user.role !== 'Admin' && schedule.studentId.toString() !== req.user._id.toString()) {
         return res.status(403).json({ message: 'Not authorized' });
     }
 
     schedule.status = req.body.status || schedule.status;
     schedule.feedback = req.body.feedback || schedule.feedback;
+    if (req.body.resources !== undefined) {
+      schedule.resources = req.body.resources;
+    }
     await schedule.save();
     res.json(schedule);
   } catch (error) {
