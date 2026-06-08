@@ -200,3 +200,43 @@ exports.deleteStudent = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (req.body.email && req.body.email.trim() !== user.email) {
+      const emailExists = await User.findOne({ email: req.body.email.trim() });
+      if (emailExists) return res.status(400).json({ message: 'Email already in use' });
+      user.email = req.body.email.trim();
+    }
+    if (req.body.phone && req.body.phone.trim() !== user.phone) {
+      const phoneExists = await User.findOne({ phone: req.body.phone.trim() });
+      if (phoneExists) return res.status(400).json({ message: 'Phone number already in use' });
+      user.phone = req.body.phone.trim();
+    }
+
+    user.fullName = req.body.fullName || user.fullName;
+    user.parentEmail = req.body.parentEmail !== undefined ? req.body.parentEmail : user.parentEmail;
+
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+
+    await user.save();
+
+    res.json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      parentEmail: user.parentEmail,
+      message: 'Profile updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

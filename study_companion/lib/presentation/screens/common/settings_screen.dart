@@ -38,9 +38,17 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(user?.role ?? ''),
             subtitle: const Text('Role'),
           ),
+          ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: const Text('Edit Profile'),
+            subtitle: const Text('Update name, phone, or password'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/edit-profile'),
+          ),
           const Divider(),
 
           // ── Preferences ──────────────────────────────────────────
+
           _buildSectionHeader('Preferences'),
           SwitchListTile(
             title: const Text('Dark Mode'),
@@ -56,7 +64,7 @@ class SettingsScreen extends ConsumerWidget {
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('Version'),
-            subtitle: Text('1.0.1'),
+            subtitle: Text('1.0.2'),
           ),
           const Divider(),
 

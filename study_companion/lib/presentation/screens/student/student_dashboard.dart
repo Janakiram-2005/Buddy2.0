@@ -192,18 +192,21 @@ class StudentDashboard extends ConsumerWidget {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: orientation == Orientation.portrait ? 2 : 4,
+      crossAxisCount: orientation == Orientation.portrait ? 3 : 6,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: orientation == Orientation.portrait ? 1.5 : 2.0,
+      childAspectRatio: orientation == Orientation.portrait ? 1.1 : 1.4,
       children: [
         _buildActionCard(context, Icons.timer_outlined, 'Focus Timer', Colors.green, () => context.push('/timer')),
         _buildActionCard(context, Icons.quiz_outlined, 'Quizzes', Colors.purple, () => context.push('/quiz-list')),
+        _buildActionCard(context, Icons.auto_awesome_outlined, 'AI Chat', Colors.amber.shade700, () => context.push('/student/chat')),
         _buildActionCard(context, Icons.camera_alt_outlined, 'Submissions', Colors.blue, () => context.push('/submit')),
+        _buildActionCard(context, Icons.person_outline, 'Profile', Colors.teal, () => context.push('/edit-profile')),
         _buildActionCard(context, Icons.settings_outlined, 'Settings', Colors.grey, () => context.push('/settings')),
       ],
     );
   }
+
 
   Widget _buildActionCard(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
     return Card(

@@ -192,3 +192,47 @@ exports.chatWithAI = async (message, imageBase64, history = []) => {
     };
   }
 };
+
+exports.suggestTopics = async (subject, description = '') => {
+  try {
+    if (!generativeModel) throw new Error('Vertex AI model not initialized');
+    const prompt = `Suggest 5 relevant study topics/sub-topics for the subject "${subject}"${description ? ` based on the description: "${description}"` : ''}.
+    For each topic, provide a short 1-2 sentence description explaining what it covers.
+    Return the response as a JSON array of objects, where each object has "topic" and "description" fields.
+    Return ONLY the JSON.`;
+
+    const resp = await generativeModel.generateContent(prompt);
+    const content = resp.response.candidates[0].content.parts[0].text;
+    const cleanJson = content.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.warn('Vertex AI suggestTopics failed, using fallback:', error.message);
+    const subjLower = subject.toLowerCase();
+    if (subjLower.includes('phys')) {
+      return [
+        { topic: 'Kinematics', description: 'Study of motion of points, bodies, and systems without consideration of the forces that cause them to move.' },
+        { topic: 'Newton\'s Laws of Motion', description: 'Three physical laws that together laid the foundation for classical mechanics.' },
+        { topic: 'Work, Energy, and Power', description: 'Concepts of energy transfer, conservation of energy, and rate of doing work.' },
+        { topic: 'Rotational Motion', description: 'Dynamics of circular motion, torque, angular momentum, and rotational inertia.' },
+        { topic: 'Gravitation', description: 'Universal force of attraction acting between all matter, Kepler\'s laws of planetary motion.' }
+      ];
+    } else if (subjLower.includes('chem')) {
+      return [
+        { topic: 'Atomic Structure', description: 'The structure of atoms, electron configurations, quantum numbers, and periodic trends.' },
+        { topic: 'Chemical Bonding', description: 'Ionic, covalent, and metallic bonding, molecular geometry, and intermolecular forces.' },
+        { topic: 'Stoichiometry', description: 'Quantitative relationships between reactants and products in chemical reactions.' },
+        { topic: 'Chemical Equilibrium', description: 'The state in which both reactants and products are present in concentrations which have no further tendency to change with time.' },
+        { topic: 'Thermodynamics', description: 'Study of heat, work, energy, and the spontaneity of chemical processes.' }
+      ];
+    } else {
+      return [
+        { topic: 'Calculus', description: 'Limits, derivatives, integrals, and their applications in solving real-world rate problems.' },
+        { topic: 'Linear Algebra', description: 'Systems of linear equations, matrices, vector spaces, and linear transformations.' },
+        { topic: 'Probability and Statistics', description: 'Data analysis, probability distributions, hypothesis testing, and statistical inference.' },
+        { topic: 'Coordinate Geometry', description: 'Study of geometry using a coordinate system, equations of lines, circles, and conics.' },
+        { topic: 'Trigonometry', description: 'Relationships between angles and sides of triangles, trigonometric functions and identities.' }
+      ];
+    }
+  }
+};
+

@@ -27,6 +27,9 @@ import 'presentation/screens/admin/create_submission_screen.dart';
 // Admin control screens
 import 'presentation/screens/admin/admin_tasks_screen.dart';
 import 'presentation/screens/admin/admin_timetable_screen.dart';
+import 'presentation/screens/student/edit_profile_screen.dart';
+import 'presentation/screens/student/ai_chat_screen.dart';
+import 'presentation/screens/admin/suggest_topics_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -42,6 +45,9 @@ final _router = GoRouter(
     GoRoute(path: '/admin',  builder: (context, state) => const AdminDashboard()),
     GoRoute(path: '/submit', builder: (context, state) => const SubmissionScreen()),
     GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+    GoRoute(path: '/edit-profile', builder: (context, state) => const EditProfileScreen()),
+    GoRoute(path: '/student/chat', builder: (context, state) => const AiChatScreen()),
+    GoRoute(path: '/admin/suggest-topics', builder: (context, state) => const SuggestTopicsScreen()),
     
     // New screens mapping
     GoRoute(path: '/tasks', builder: (context, state) => const TaskManagementScreen()),
@@ -67,6 +73,7 @@ final _router = GoRouter(
     ),
   ],
 );
+
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});

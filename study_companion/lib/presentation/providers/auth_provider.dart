@@ -54,4 +54,18 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
     await prefs.remove('jwt_token');
     state = const AsyncValue.data(null);
   }
+
+  void updateUserState(UserModel user) {
+    // Preserve the original token if not provided in the update response
+    final updatedUser = UserModel(
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      phone: user.phone,
+      token: user.token ?? state.value?.token,
+    );
+    state = AsyncValue.data(updatedUser);
+  }
 }
+

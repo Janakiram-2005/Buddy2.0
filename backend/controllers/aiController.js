@@ -39,3 +39,25 @@ exports.analyticsSummary = async (req, res) => {
     res.status(500).json({ message: 'AI generation failed: ' + error.message });
   }
 };
+
+exports.chatWithAI = async (req, res) => {
+  try {
+    const { message, imageBase64, history } = req.body;
+    const reply = await aiService.chatWithAI(message, imageBase64, history);
+    res.json(reply);
+  } catch (error) {
+    res.status(500).json({ message: 'AI Chat failed: ' + error.message });
+  }
+};
+
+exports.suggestTopics = async (req, res) => {
+  try {
+    const { subject, description } = req.body;
+    const topics = await aiService.suggestTopics(subject, description);
+    res.json(topics);
+  } catch (error) {
+    res.status(500).json({ message: 'AI Suggest Topics failed: ' + error.message });
+  }
+};
+
+

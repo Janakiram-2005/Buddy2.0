@@ -188,6 +188,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         _buildControlCard(context, Icons.calendar_today_outlined, 'Plan Schedules', () => context.push('/admin/schedules').then((_) {
           ref.invalidate(adminOverviewProvider);
         })),
+        _buildControlCard(context, Icons.auto_awesome_outlined, 'Suggest Topics', () => context.push('/admin/suggest-topics')),
         _buildControlCard(context, Icons.menu_book_outlined, 'Link Resources', () => context.push('/admin/resources')),
         _buildControlCard(context, Icons.check_box_outlined, 'Quiz Control', () => context.push('/admin/quizzes')),
         _buildControlCard(context, Icons.cloud_upload_outlined, 'Create Submissions', () => context.push('/admin/create-submission')),
@@ -200,6 +201,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
       ],
     );
   }
+
 
   Widget _buildControlCard(BuildContext context, IconData icon, String label, VoidCallback onTap) {
     final screenWidth = MediaQuery.of(context).size.width;

@@ -54,9 +54,13 @@ class AppDrawer extends ConsumerWidget {
                   Navigator.pop(context);
                   context.push('/quiz-list');
                 }),
-                _buildDrawerItem(context, Icons.timer_outlined, 'Study Focus Timer', () {
+                 _buildDrawerItem(context, Icons.timer_outlined, 'Study Focus Timer', () {
                   Navigator.pop(context);
                   context.push('/timer');
+                }),
+                _buildDrawerItem(context, Icons.auto_awesome_outlined, 'AI Study Assistant', () {
+                  Navigator.pop(context);
+                  context.push('/student/chat');
                 }),
                 _buildDrawerItem(context, Icons.camera_alt_outlined, 'Submissions', () {
                   Navigator.pop(context);
@@ -88,6 +92,10 @@ class AppDrawer extends ConsumerWidget {
                   Navigator.pop(context);
                   context.push('/admin/schedules');
                 }),
+                _buildDrawerItem(context, Icons.auto_awesome_outlined, 'AI Topic Suggestions', () {
+                  Navigator.pop(context);
+                  context.push('/admin/suggest-topics');
+                }),
                 _buildDrawerItem(context, Icons.menu_book_outlined, 'Link Resources', () {
                   Navigator.pop(context);
                   context.push('/admin/resources');
@@ -102,6 +110,7 @@ class AppDrawer extends ConsumerWidget {
                 }),
               ],
             ),
+
 
           const Divider(),
 
