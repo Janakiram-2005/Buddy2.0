@@ -67,7 +67,7 @@ class _ResourceManagementScreenState extends ConsumerState<ResourceManagementScr
                 const Text('Resources in this batch:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 const SizedBox(height: 6),
                 Container(
-                  maxHeight: 180,
+                  constraints: const BoxConstraints(maxHeight: 180),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.withOpacity(0.3)),
                     borderRadius: BorderRadius.circular(6),
