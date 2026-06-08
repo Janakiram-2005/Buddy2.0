@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'super_secret_buddy_key', { expiresIn: '30d' });
 };
 
 exports.registerUser = async (req, res) => {
@@ -62,16 +62,18 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Email/phone and password are required' });
     }
 
-    // 1. Check for hardcoded Admin from .env
-    if (identifier === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+    // 1. Check for hardcoded Admin from env or defaults
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@buddy.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || '123';
+    if (identifier === adminEmail && password === adminPassword) {
       // Find or create the admin record in DB (so other references work)
-      let admin = await User.findOne({ email: identifier });
+      let admin = await User.findOne({ email: adminEmail });
       if (!admin) {
         // Pass PLAIN password — the pre-save hook hashes it once
         admin = await User.create({
           fullName: 'System Admin',
-          email: identifier,
-          password: password,   // ← plain text; pre-save hook will hash
+          email: adminEmail,
+          password: adminPassword,   // ← plain text; pre-save hook will hash
           role: 'Admin',
           status: 'Approved'
         });
