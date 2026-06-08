@@ -1,0 +1,27 @@
+# Build outputs
+/build
+study_companion/build/
+study_companion/.dart_tool/
+study_companion/.flutter-plugins
+study_companion/.flutter-plugins-dependencies
+study_companion/android/.gradle/
+study_companion/android/local.properties
+study_companion/ios/Pods/
+study_companion/ios/.symlinks/
+
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Credentials & environment configuration
+.env
+*.env
+backend/.env
+backend/config/vertex-api-key.json
+
+# IDEs and System files
+.idea/
+*.iml
+.gradle/
+.DS_Store
+local.properties
