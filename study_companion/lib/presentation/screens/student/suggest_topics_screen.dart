@@ -227,20 +227,20 @@ class _SuggestTopicsScreenState extends ConsumerState<SuggestTopicsScreen> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 TextButton.icon(
-                                  icon: const Icon(Icons.schedule, size: 16),
-                                  label: const Text('Schedule'),
+                                  icon: const Icon(Icons.timer_outlined, size: 16),
+                                  label: const Text('Study Topic'),
                                   onPressed: () {
                                     _copyToClipboard(topicTitle, "Topic");
-                                    context.push('/admin/schedules');
+                                    context.push('/timer');
                                   },
                                 ),
                                 const SizedBox(width: 8),
                                 TextButton.icon(
-                                  icon: const Icon(Icons.quiz_outlined, size: 16),
-                                  label: const Text('Quiz'),
+                                  icon: const Icon(Icons.auto_awesome, size: 16),
+                                  label: const Text('Ask AI'),
                                   onPressed: () {
                                     _copyToClipboard(topicTitle, "Topic");
-                                    context.push('/admin/quizzes');
+                                    context.push('/student/chat');
                                   },
                                 ),
                               ],

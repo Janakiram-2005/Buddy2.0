@@ -201,11 +201,12 @@ class StudentDashboard extends ConsumerWidget {
         _buildActionCard(context, Icons.quiz_outlined, 'Quizzes', Colors.purple, () => context.push('/quiz-list')),
         _buildActionCard(context, Icons.auto_awesome_outlined, 'AI Chat', Colors.amber.shade700, () => context.push('/student/chat')),
         _buildActionCard(context, Icons.camera_alt_outlined, 'Submissions', Colors.blue, () => context.push('/submit')),
-        _buildActionCard(context, Icons.person_outline, 'Profile', Colors.teal, () => context.push('/edit-profile')),
+        _buildActionCard(context, Icons.lightbulb_outline, 'AI Topics', Colors.teal, () => context.push('/student/suggest-topics')),
         _buildActionCard(context, Icons.settings_outlined, 'Settings', Colors.grey, () => context.push('/settings')),
       ],
     );
   }
+
 
 
   Widget _buildActionCard(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {

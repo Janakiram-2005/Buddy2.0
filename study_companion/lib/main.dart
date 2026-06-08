@@ -29,7 +29,7 @@ import 'presentation/screens/admin/admin_tasks_screen.dart';
 import 'presentation/screens/admin/admin_timetable_screen.dart';
 import 'presentation/screens/student/edit_profile_screen.dart';
 import 'presentation/screens/student/ai_chat_screen.dart';
-import 'presentation/screens/admin/suggest_topics_screen.dart';
+import 'presentation/screens/student/suggest_topics_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -47,7 +47,7 @@ final _router = GoRouter(
     GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
     GoRoute(path: '/edit-profile', builder: (context, state) => const EditProfileScreen()),
     GoRoute(path: '/student/chat', builder: (context, state) => const AiChatScreen()),
-    GoRoute(path: '/admin/suggest-topics', builder: (context, state) => const SuggestTopicsScreen()),
+    GoRoute(path: '/student/suggest-topics', builder: (context, state) => const SuggestTopicsScreen()),
     
     // New screens mapping
     GoRoute(path: '/tasks', builder: (context, state) => const TaskManagementScreen()),

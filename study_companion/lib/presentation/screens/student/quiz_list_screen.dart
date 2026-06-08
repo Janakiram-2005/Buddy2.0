@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/network/api_client.dart';
 import '../../widgets/app_drawer.dart';
 
@@ -41,6 +42,7 @@ class QuizListScreen extends ConsumerWidget {
                 final timeLimit = quiz['timeLimit'] ?? 10;
                 final qCount = (quiz['questions'] as List?)?.length ?? 0;
                 final isAi = quiz['isAiGenerated'] == true;
+                final attempts = quiz['attempts'] as List? ?? [];
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -115,6 +117,44 @@ class QuizListScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
+                        if (attempts.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Your Attempts History:',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          const SizedBox(height: 8),
+                          ...attempts.map((att) {
+                            final score = att['score'] ?? 0;
+                            final total = att['totalQuestions'] ?? 0;
+                            final pct = total > 0 ? (score / total * 100).toStringAsFixed(0) : '0';
+                            final dateStr = att['completedAt'] != null 
+                              ? DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(att['completedAt']))
+                              : 'Unknown Date';
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 6.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Score: $score/$total ($pct%)',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: (score / total) >= 0.7 ? Colors.green : Colors.red,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  Text(
+                                    dateStr,
+                                    style: const TextStyle(fontSize: 11, color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => context.push('/quiz-attempt/$id'),
@@ -122,7 +162,7 @@ class QuizListScreen extends ConsumerWidget {
                             minimumSize: const Size.fromHeight(44),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: const Text('START QUIZ'),
+                          child: Text(attempts.isNotEmpty ? 'RE-ATTEMPT QUIZ' : 'START QUIZ'),
                         ),
                       ],
                     ),

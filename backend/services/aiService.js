@@ -177,10 +177,11 @@ exports.chatWithAI = async (message, imageBase64, history = []) => {
     parts.push({ text: message });
 
     let promptParts = [];
-    if (history.length > 0) {
+    if (history && Array.isArray(history) && history.length > 0) {
       promptParts.push({ text: "Conversation history so far for context:\n" + history.map(h => `${h.role}: ${h.text}`).join('\n') + "\n\n" });
     }
     promptParts = [...promptParts, ...parts];
+
 
     const resp = await generativeModel.generateContent({ contents: [{ role: 'user', parts: promptParts }] });
     const replyText = resp.response.candidates[0].content.parts[0].text;

@@ -8,7 +8,7 @@ router.post('/generate-quiz', protect, admin, generateQuiz);
 router.post('/recommend-resources', protect, admin, recommendResources);
 router.post('/analytics-summary', protect, admin, analyticsSummary);
 router.post('/chat', protect, chatWithAI);
-router.post('/suggest-topics', protect, admin, suggestTopics);
+router.post('/suggest-topics', protect, suggestTopics);
 
 module.exports = router;
 

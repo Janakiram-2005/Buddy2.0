@@ -22,12 +22,24 @@ exports.getQuizzes = async (req, res) => {
         ]
       };
     }
-    const quizzes = await Quiz.find(query).populate('assignedStudentId', 'fullName');
+    const quizzes = await Quiz.find(query).populate('assignedStudentId', 'fullName').lean();
+
+    if (req.user.role === 'Student') {
+      for (let quiz of quizzes) {
+        quiz.attempts = await QuizResult.find({ quizId: quiz._id, studentId: req.user._id });
+      }
+    } else {
+      for (let quiz of quizzes) {
+        quiz.attempts = await QuizResult.find({ quizId: quiz._id }).populate('studentId', 'fullName');
+      }
+    }
+
     res.json(quizzes);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.getQuizById = async (req, res) => {
   try {
@@ -60,11 +72,8 @@ exports.deleteQuiz = async (req, res) => {
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
     
-    // Check if quiz has attempts
-    const attemptsCount = await QuizResult.countDocuments({ quizId: req.params.id });
-    if (attemptsCount > 0) {
-      return res.status(400).json({ message: 'Cannot delete quiz: it has already been attempted by students.' });
-    }
+    // Cascade delete all attempts
+    await QuizResult.deleteMany({ quizId: req.params.id });
 
     await Quiz.findByIdAndDelete(req.params.id);
     res.json({ message: 'Quiz deleted successfully' });
@@ -72,6 +81,7 @@ exports.deleteQuiz = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 exports.updateQuiz = async (req, res) => {
   try {

@@ -62,6 +62,10 @@ class AppDrawer extends ConsumerWidget {
                   Navigator.pop(context);
                   context.push('/student/chat');
                 }),
+                _buildDrawerItem(context, Icons.lightbulb_outline, 'AI Topic Suggestions', () {
+                  Navigator.pop(context);
+                  context.push('/student/suggest-topics');
+                }),
                 _buildDrawerItem(context, Icons.camera_alt_outlined, 'Submissions', () {
                   Navigator.pop(context);
                   context.push('/submit');
@@ -92,10 +96,6 @@ class AppDrawer extends ConsumerWidget {
                   Navigator.pop(context);
                   context.push('/admin/schedules');
                 }),
-                _buildDrawerItem(context, Icons.auto_awesome_outlined, 'AI Topic Suggestions', () {
-                  Navigator.pop(context);
-                  context.push('/admin/suggest-topics');
-                }),
                 _buildDrawerItem(context, Icons.menu_book_outlined, 'Link Resources', () {
                   Navigator.pop(context);
                   context.push('/admin/resources');
@@ -104,6 +104,7 @@ class AppDrawer extends ConsumerWidget {
                   Navigator.pop(context);
                   context.push('/admin/quizzes');
                 }),
+
                 _buildDrawerItem(context, Icons.rate_review_outlined, 'Review Submissions', () {
                   Navigator.pop(context);
                   context.push('/admin/submissions');
