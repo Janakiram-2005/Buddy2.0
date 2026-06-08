@@ -34,7 +34,7 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
 
   Future<void> login(String identifier, String password) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    try {
       final response = await _api.dio.post('/auth/login', data: {
         'identifier': identifier,
         'password': password,
@@ -42,8 +42,11 @@ class AuthNotifier extends AsyncNotifier<UserModel?> {
       final user = UserModel.fromJson(response.data);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt_token', user.token!);
-      return user;
-    });
+      state = AsyncValue.data(user);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
   }
 
   Future<void> logout() async {

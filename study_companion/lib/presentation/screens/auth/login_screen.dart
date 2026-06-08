@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:dio/dio.dart';
 import '../../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -85,16 +86,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _handleLogin() async {
     try {
       await ref.read(authProvider.notifier).login(
-            _identifierController.text,
-            _passwordController.text,
+            _identifierController.text.trim(),
+            _passwordController.text.trim(),
           );
       final user = ref.read(authProvider).value;
       if (user != null) {
-        context.go(user.role == 'Admin' ? '/admin' : '/student');
+        if (mounted) {
+          context.go(user.role == 'Admin' ? '/admin' : '/student');
+        }
       }
     } catch (e) {
+      String errorMsg = e.toString();
+      if (e is DioException) {
+        errorMsg = e.response?.data?['message'] ?? e.message ?? e.toString();
+      }
       Fluttertoast.showToast(
-        msg: e.toString(),
+        msg: errorMsg,
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
