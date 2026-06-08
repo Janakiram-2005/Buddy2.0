@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../data/models/schedule_model.dart';
 import '../../../core/network/api_client.dart';
 
@@ -111,8 +112,13 @@ class _TopicWorkspaceState extends State<TopicWorkspace> {
                     title: Text(res),
                     subtitle: Text(resType),
                     trailing: const Icon(Icons.open_in_new_outlined, size: 18),
-                    onTap: () {
-                      Fluttertoast.showToast(msg: "Opening: $res");
+                    onTap: () async {
+                      try {
+                        final uri = Uri.parse(res);
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        Fluttertoast.showToast(msg: "Could not launch URL: $e", backgroundColor: Colors.red);
+                      }
                     },
                   ),
                 );
