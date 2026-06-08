@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   final Dio dio;
-  static const String baseUrl = 'http://localhost:5000/api'; // Change for device/emulator
+  static const String baseUrl = 'https://buddy2-0.onrender.com/api'; // Change for device/emulator
 
   ApiClient() : dio = Dio(BaseOptions(baseUrl: baseUrl)) {
     dio.interceptors.add(InterceptorsWrapper(
