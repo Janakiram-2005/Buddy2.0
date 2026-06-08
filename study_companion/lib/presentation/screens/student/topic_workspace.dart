@@ -57,6 +57,41 @@ class _TopicWorkspaceState extends State<TopicWorkspace> {
     }
   }
 
+  Future<void> _launchURL(String urlString) async {
+    String cleanedUrl = urlString.trim();
+    if (cleanedUrl.isEmpty) return;
+
+    if (!cleanedUrl.startsWith('http://') && !cleanedUrl.startsWith('https://')) {
+      cleanedUrl = 'https://$cleanedUrl';
+    }
+
+    try {
+      final Uri uri = Uri.parse(cleanedUrl);
+      
+      // Try launching in external application mode first
+      final bool launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        // Fall back to default launching
+        final bool launchedFallback = await launchUrl(uri, mode: LaunchMode.platformDefault);
+        if (!launchedFallback) {
+          throw 'Could not launch URL via platform default launch mode';
+        }
+      }
+    } catch (e) {
+      // Last-resort fallback to standard launchUrl
+      try {
+        final Uri uri = Uri.parse(cleanedUrl);
+        await launchUrl(uri);
+      } catch (err) {
+        Fluttertoast.showToast(
+          msg: "Could not open link: $cleanedUrl\nError: $e",
+          backgroundColor: Colors.red,
+          toastLength: Toast.LENGTH_LONG,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final resources = widget.schedule.resources ?? [];
@@ -112,14 +147,7 @@ class _TopicWorkspaceState extends State<TopicWorkspace> {
                     title: Text(res),
                     subtitle: Text(resType),
                     trailing: const Icon(Icons.open_in_new_outlined, size: 18),
-                    onTap: () async {
-                      try {
-                        final uri = Uri.parse(res);
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                      } catch (e) {
-                        Fluttertoast.showToast(msg: "Could not launch URL: $e", backgroundColor: Colors.red);
-                      }
-                    },
+                    onTap: () => _launchURL(res),
                   ),
                 );
               }),
