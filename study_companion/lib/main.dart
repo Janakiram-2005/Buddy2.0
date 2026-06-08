@@ -22,6 +22,7 @@ import 'presentation/screens/admin/schedule_creator.dart';
 import 'presentation/screens/admin/resource_management_screen.dart';
 import 'presentation/screens/admin/quiz_management_screen.dart';
 import 'presentation/screens/admin/submission_review_screen.dart';
+import 'presentation/screens/admin/create_submission_screen.dart';
 
 // Admin control screens
 import 'presentation/screens/admin/admin_tasks_screen.dart';
@@ -56,6 +57,7 @@ final _router = GoRouter(
     GoRoute(path: '/admin/resources', builder: (context, state) => const ResourceManagementScreen()),
     GoRoute(path: '/admin/quizzes', builder: (context, state) => const QuizManagementScreen()),
     GoRoute(path: '/admin/submissions', builder: (context, state) => const SubmissionReviewScreen()),
+    GoRoute(path: '/admin/create-submission', builder: (context, state) => const CreateSubmissionScreen()),
     
     // Admin control screens mapping
     GoRoute(path: '/admin/tasks', builder: (context, state) => const AdminTasksScreen()),

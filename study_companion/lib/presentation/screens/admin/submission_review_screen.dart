@@ -94,7 +94,7 @@ class _SubmissionReviewScreenState extends ConsumerState<SubmissionReviewScreen>
               itemCount: subs.length,
               itemBuilder: (context, index) {
                 final sub = subs[index];
-                final studentName = sub['studentId']?['fullName'] ?? 'Student';
+                final studentName = (sub['studentId'] is Map) ? (sub['studentId']['fullName'] ?? 'Student') : 'Student';
                 final hasFeedback = sub['adminFeedback'] != null && (sub['adminFeedback'] as String).isNotEmpty;
                 final fileUrl = sub['fileUrl'] ?? '';
 

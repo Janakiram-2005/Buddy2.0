@@ -1,4 +1,5 @@
 const Submission = require('../models/Submission');
+const SubmissionRequirement = require('../models/SubmissionRequirement');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -23,12 +24,18 @@ exports.createSubmission = async (req, res) => {
 
     const submission = await Submission.create({
       studentId: req.user._id,
+      requirementId: req.body.requirementId || undefined,
       subject: req.body.subject,
       topic: req.body.topic,
       submissionType: req.body.submissionType || 'Image',
       fileUrl,
       comments: req.body.comments
     });
+
+    if (req.body.requirementId) {
+      await SubmissionRequirement.findByIdAndUpdate(req.body.requirementId, { status: 'Submitted' });
+    }
+
     res.status(201).json(submission);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,6 +67,12 @@ exports.addFeedback = async (req, res) => {
 
     submission.adminFeedback = req.body.feedback;
     await submission.save();
+
+    if (submission.requirementId) {
+      const reqStatus = req.body.status || 'Approved';
+      await SubmissionRequirement.findByIdAndUpdate(submission.requirementId, { status: reqStatus });
+    }
+
     res.json(submission);
   } catch (error) {
     res.status(500).json({ message: error.message });

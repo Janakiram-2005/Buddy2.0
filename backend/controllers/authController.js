@@ -1,6 +1,11 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Schedule = require('../models/Schedule');
+const Task = require('../models/Task');
+const QuizResult = require('../models/QuizResult');
+const Submission = require('../models/Submission');
+const SubmissionRequirement = require('../models/SubmissionRequirement');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'super_secret_buddy_key', { expiresIn: '30d' });
@@ -167,6 +172,30 @@ exports.createStudentDirectly = async (req, res) => {
     });
 
     res.status(201).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteStudent = async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+    
+    if (student.role !== 'Student') {
+      return res.status(400).json({ message: 'Only student accounts can be removed' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    
+    // Cascade delete student data
+    await Schedule.deleteMany({ studentId: req.params.id });
+    await Task.deleteMany({ studentId: req.params.id });
+    await QuizResult.deleteMany({ studentId: req.params.id });
+    await Submission.deleteMany({ studentId: req.params.id });
+    await SubmissionRequirement.deleteMany({ studentId: req.params.id });
+
+    res.json({ message: 'Student and all associated data removed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

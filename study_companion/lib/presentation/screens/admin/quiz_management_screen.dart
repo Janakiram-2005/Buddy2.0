@@ -20,6 +20,10 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
   final _aiSubjectController = TextEditingController();
   final _aiTopicController = TextEditingController();
   int _aiCount = 5;
+  String _aiDifficulty = 'medium';
+  String _aiDiagrams = 'without diagrams';
+  String _aiStyle = 'statement type';
+  String _aiFormat = 'mcq\'s';
 
   // Manual Form state
   final _titleController = TextEditingController();
@@ -54,6 +58,10 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
         'subject': subject,
         'topic': topic,
         'count': _aiCount,
+        'difficulty': _aiDifficulty,
+        'diagrams': _aiDiagrams,
+        'style': _aiStyle,
+        'format': _aiFormat,
       });
 
       final aiResult = response.data;
@@ -390,16 +398,55 @@ class _QuizManagementScreenState extends ConsumerState<QuizManagementScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('Question Count:'),
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    value: _aiCount,
+                    decoration: const InputDecoration(labelText: 'Question Count', border: OutlineInputBorder()),
+                    items: [3, 5, 10, 15].map((c) {
+                      return DropdownMenuItem(value: c, child: Text(c.toString()));
+                    }).toList(),
+                    onChanged: (val) => setState(() => _aiCount = val!),
+                  ),
+                ),
                 const SizedBox(width: 12),
-                DropdownButton<int>(
-                  value: _aiCount,
-                  items: [3, 5, 10, 15].map((c) {
-                    return DropdownMenuItem(value: c, child: Text(c.toString()));
-                  }).toList(),
-                  onChanged: (val) => setState(() => _aiCount = val!),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _aiDifficulty,
+                    decoration: const InputDecoration(labelText: 'Difficulty', border: OutlineInputBorder()),
+                    items: ['low', 'medium', 'hard'].map((d) => DropdownMenuItem(value: d, child: Text(d.toUpperCase()))).toList(),
+                    onChanged: (val) => setState(() => _aiDifficulty = val!),
+                  ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _aiDiagrams,
+                    decoration: const InputDecoration(labelText: 'Diagrams', border: OutlineInputBorder()),
+                    items: ['with diagrams', 'without diagrams'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                    onChanged: (val) => setState(() => _aiDiagrams = val!),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _aiFormat,
+                    decoration: const InputDecoration(labelText: 'Question Format', border: OutlineInputBorder()),
+                    items: ['fill in the blank', 'mcq\'s', 'mixed'].map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                    onChanged: (val) => setState(() => _aiFormat = val!),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _aiStyle,
+              decoration: const InputDecoration(labelText: 'Question Style', border: OutlineInputBorder()),
+              items: ['mixed numerical', 'statement type'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              onChanged: (val) => setState(() => _aiStyle = val!),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

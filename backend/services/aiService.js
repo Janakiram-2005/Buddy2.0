@@ -60,12 +60,18 @@ exports.generateSchedule = async (prompt) => {
   }
 };
 
-exports.generateQuiz = async (subject, topic, count = 5) => {
+exports.generateQuiz = async (subject, topic, count = 5, difficulty = 'medium', diagrams = 'without diagrams', style = 'statement type', format = 'mixed') => {
   try {
     if (!generativeModel) throw new Error('Vertex AI model not initialized');
     const prompt = `Generate a quiz with ${count} questions for subject: ${subject} and topic: ${topic}.
+    Please apply the following filters/constraints:
+    - Difficulty level: ${difficulty}
+    - Diagrams: ${diagrams} ${diagrams === 'with diagrams' ? '(please describe the diagram/graph textually in the question text or a separate diagramDescription field, and explain it in the explanation)' : ''}
+    - Question Style: ${style}
+    - Question Format: ${format}
+    
     The format should be a JSON object with:
-    title, subject, topic, questions (array of objects with: type (MCQ/TrueFalse/ShortAnswer), question, options (array for MCQ), correctAnswer, explanation).
+    title, subject, topic, questions (array of objects with: type (MCQ/TrueFalse/ShortAnswer/FillInTheBlank), question, options (array for MCQ, empty or omitted for others), correctAnswer, explanation, diagramDescription (optional string describing diagram if applicable)).
     Return ONLY the JSON.`;
 
     const resp = await generativeModel.generateContent(prompt);
@@ -74,32 +80,37 @@ exports.generateQuiz = async (subject, topic, count = 5) => {
     return JSON.parse(cleanJson);
   } catch (error) {
     console.warn('Vertex AI generation failed, falling back to mock quiz generator:', error.message);
+    const mockQuestions = [];
+    const actualFormat = format || 'mixed';
+    
+    for (let i = 1; i <= count; i++) {
+      let qType = 'MCQ';
+      if (actualFormat === 'fill in the blank') {
+        qType = 'FillInTheBlank';
+      } else if (actualFormat === 'mixed') {
+        qType = i % 2 === 0 ? 'MCQ' : 'FillInTheBlank';
+      }
+      
+      const isNumerical = style === 'mixed numerical' && i % 2 === 0;
+      const questionText = isNumerical 
+        ? `What is the value of the formula parameter in ${topic} if the inputs are 5 and 10? (${difficulty} level, ${diagrams})`
+        : `Which statement best describes ${topic}? (${difficulty} level, ${diagrams})`;
+      
+      mockQuestions.push({
+        type: qType,
+        question: questionText,
+        options: qType === 'MCQ' ? ['Option A (Correct)', 'Option B', 'Option C', 'Option D'] : [],
+        correctAnswer: qType === 'MCQ' ? 'Option A (Correct)' : '50',
+        explanation: `This is a mock explanation explaining ${topic} for a ${difficulty} level question under ${style} style.`,
+        ...(diagrams === 'with diagrams' && { diagramDescription: 'A diagram showing the flow of the process.' })
+      });
+    }
+
     return {
-      title: `${topic} Quick Diagnostic Quiz`,
+      title: `${topic} Quick Diagnostic Quiz (${difficulty})`,
       subject: subject,
       topic: topic,
-      questions: [
-        {
-          type: 'MCQ',
-          question: `Which of the following is a primary characteristic of ${topic}?`,
-          options: ['Option A: Fundamental property', 'Option B: Secondary effect', 'Option C: Negligible factor', 'Option D: None of the above'],
-          correctAnswer: 'Option A: Fundamental property',
-          explanation: `In standard theory, ${topic} is defined primarily by Option A due to its basic behavior.`
-        },
-        {
-          type: 'TrueFalse',
-          question: `True or False: ${topic} is a constant value under all standard conditions.`,
-          options: ['True', 'False'],
-          correctAnswer: 'False',
-          explanation: `${topic} varies based on external environmental factors like temperature or force.`
-        },
-        {
-          type: 'ShortAnswer',
-          question: `Briefly define the primary goal of studying ${topic}.`,
-          correctAnswer: 'To understand its direct physical and practical application.',
-          explanation: `Studying ${topic} allows students to resolve engineering and practical math equations.`
-        }
-      ]
+      questions: mockQuestions
     };
   }
 };

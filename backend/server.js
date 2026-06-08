@@ -10,6 +10,7 @@ const scheduleRoutes = require('./routes/schedule');
 const taskRoutes = require('./routes/task');
 const quizRoutes = require('./routes/quiz');
 const submissionRoutes = require('./routes/submission');
+const submissionRequirementRoutes = require('./routes/submissionRequirement');
 const aiRoutes = require('./routes/ai');
 const analyticsRoutes = require('./routes/analytics');
 
@@ -47,6 +48,7 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api/submission-requirements', submissionRequirementRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
 

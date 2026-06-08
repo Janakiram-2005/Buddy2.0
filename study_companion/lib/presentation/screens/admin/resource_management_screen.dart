@@ -22,49 +22,104 @@ class _ResourceManagementScreenState extends ConsumerState<ResourceManagementScr
 
   Future<void> _addResource(dynamic schedule) async {
     final controller = TextEditingController();
-    final confirmed = await showDialog<bool>(
+    List<String> tempUrls = List<String>.from(schedule['resources'] ?? []);
+
+    final saved = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add Learning Resource'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Topic: ${schedule['topic']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Resource URL (YouTube / PDF / Notes)',
-                hintText: 'https://...',
-                border: OutlineInputBorder(),
-              ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Manage Learning Resources'),
+          content: SizedBox(
+            width: 450,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Topic: ${schedule['topic']}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        decoration: const InputDecoration(
+                          labelText: 'Resource URL (YouTube/PDF/Image)',
+                          hintText: 'https://...',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline, color: Colors.green, size: 28),
+                      onPressed: () {
+                        final val = controller.text.trim();
+                        if (val.isNotEmpty) {
+                          setDialogState(() {
+                            tempUrls.add(val);
+                            controller.clear();
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text('Resources in this batch:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 6),
+                Container(
+                  maxHeight: 180,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: tempUrls.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('No resources added yet.', style: TextStyle(fontStyle: FontStyle.italic), textAlign: TextAlign.center),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: tempUrls.length,
+                          itemBuilder: (c, idx) {
+                            final url = tempUrls[idx];
+                            return ListTile(
+                              dense: true,
+                              title: Text(url, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 16),
+                                onPressed: () {
+                                  setDialogState(() {
+                                    tempUrls.removeAt(idx);
+                                  });
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('SAVE ALL'),
             ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('ADD'),
-          ),
-        ],
       ),
     );
 
-    if (confirmed == true && controller.text.trim().isNotEmpty) {
-      final newUrl = controller.text.trim();
-      List<dynamic> currentResources = List.from(schedule['resources'] ?? []);
-      currentResources.add(newUrl);
-
+    if (saved == true) {
       try {
         await _api.dio.patch('/schedules/${schedule['_id']}', data: {
-          'resources': currentResources,
+          'resources': tempUrls,
         });
-        Fluttertoast.showToast(msg: "Resource added successfully", backgroundColor: Colors.green);
+        Fluttertoast.showToast(msg: "Resources updated successfully", backgroundColor: Colors.green);
         ref.invalidate(adminSchedulesProvider);
       } catch (e) {
-        Fluttertoast.showToast(msg: "Error saving resource: $e", backgroundColor: Colors.red);
+        Fluttertoast.showToast(msg: "Error saving resources: $e", backgroundColor: Colors.red);
       }
     }
   }

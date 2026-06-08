@@ -58,7 +58,7 @@ class AppDrawer extends ConsumerWidget {
                   Navigator.pop(context);
                   context.push('/timer');
                 }),
-                _buildDrawerItem(context, Icons.camera_alt_outlined, 'Submit Study Proof', () {
+                _buildDrawerItem(context, Icons.camera_alt_outlined, 'Submissions', () {
                   Navigator.pop(context);
                   context.push('/submit');
                 }),

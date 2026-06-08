@@ -93,7 +93,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       final type = q['type'];
       String selected = '';
 
-      if (type == 'ShortAnswer') {
+      if (type == 'ShortAnswer' || type == 'FillInTheBlank') {
         selected = _shortAnswerControllers[i]?.text.trim() ?? '';
       } else {
         selected = _selectedAnswers[i] ?? '';
@@ -275,7 +275,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                   );
                 }).toList(),
               ),
-            if (type == 'ShortAnswer')
+            if (type == 'ShortAnswer' || type == 'FillInTheBlank')
               TextField(
                 controller: _shortAnswerControllers.putIfAbsent(index, () => TextEditingController()),
                 decoration: const InputDecoration(
@@ -351,7 +351,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
               final correctAns = q['correctAnswer'] ?? '';
               
               // Find what student chose
-              final studentAns = q['type'] == 'ShortAnswer'
+              final studentAns = (q['type'] == 'ShortAnswer' || q['type'] == 'FillInTheBlank')
                   ? (_shortAnswerControllers[index]?.text ?? '')
                   : (_selectedAnswers[index] ?? 'Not answered');
 

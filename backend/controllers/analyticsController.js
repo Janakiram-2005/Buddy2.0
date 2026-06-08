@@ -6,8 +6,8 @@ exports.getStudentAnalytics = async (req, res) => {
   const studentId = req.params.id || req.user._id;
   try {
     const schedules = await Schedule.find({ studentId });
-    const quizResults = await QuizResult.find({ studentId });
-    const submissions = await Submission.find({ studentId });
+    const quizResults = await QuizResult.find({ studentId }).populate('quizId');
+    const submissions = await Submission.find({ studentId }).populate('studentId');
 
     // Calculate completion rate
     const totalSchedules = schedules.length;

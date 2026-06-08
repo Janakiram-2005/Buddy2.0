@@ -8,10 +8,8 @@ import 'admin_dashboard.dart';
 
 final adminTasksProvider = FutureProvider.family.autoDispose<List<dynamic>, String>((ref, studentId) async {
   final api = ApiClient();
-  final response = await api.dio.get('/tasks');
-  // Filters task list for specific student
-  final allTasks = response.data as List;
-  return allTasks.where((t) => t['studentId'] == studentId).toList();
+  final response = await api.dio.get('/tasks?studentId=$studentId');
+  return response.data as List;
 });
 
 class AdminTasksScreen extends ConsumerStatefulWidget {

@@ -11,7 +11,15 @@ exports.createTask = async (req, res) => {
 
 exports.getStudentTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ studentId: req.user._id });
+    let query = {};
+    if (req.user.role === 'Admin') {
+      if (req.query.studentId) {
+        query.studentId = req.query.studentId;
+      }
+    } else {
+      query.studentId = req.user._id;
+    }
+    const tasks = await Task.find(query);
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: error.message });

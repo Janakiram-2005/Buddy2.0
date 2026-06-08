@@ -199,7 +199,7 @@ class StudentDashboard extends ConsumerWidget {
       children: [
         _buildActionCard(context, Icons.timer_outlined, 'Focus Timer', Colors.green, () => context.push('/timer')),
         _buildActionCard(context, Icons.quiz_outlined, 'Quizzes', Colors.purple, () => context.push('/quiz-list')),
-        _buildActionCard(context, Icons.camera_alt_outlined, 'Submit Proof', Colors.blue, () => context.push('/submit')),
+        _buildActionCard(context, Icons.camera_alt_outlined, 'Submissions', Colors.blue, () => context.push('/submit')),
         _buildActionCard(context, Icons.settings_outlined, 'Settings', Colors.grey, () => context.push('/settings')),
       ],
     );

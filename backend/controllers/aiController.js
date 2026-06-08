@@ -12,8 +12,8 @@ exports.generateSchedule = async (req, res) => {
 
 exports.generateQuiz = async (req, res) => {
   try {
-    const { subject, topic, count } = req.body;
-    const quiz = await aiService.generateQuiz(subject, topic, count);
+    const { subject, topic, count, difficulty, diagrams, style, format } = req.body;
+    const quiz = await aiService.generateQuiz(subject, topic, count, difficulty, diagrams, style, format);
     res.json(quiz);
   } catch (error) {
     res.status(500).json({ message: 'AI generation failed: ' + error.message });

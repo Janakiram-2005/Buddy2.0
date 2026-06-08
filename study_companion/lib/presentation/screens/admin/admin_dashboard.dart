@@ -181,19 +181,16 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
   }
 
   Widget _buildQuickControls(BuildContext context, Orientation orientation) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: orientation == Orientation.portrait ? 2 : 4,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: orientation == Orientation.portrait ? 2.5 : 3.5,
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
       children: [
         _buildControlCard(context, Icons.calendar_today_outlined, 'Plan Schedules', () => context.push('/admin/schedules').then((_) {
           ref.invalidate(adminOverviewProvider);
         })),
         _buildControlCard(context, Icons.menu_book_outlined, 'Link Resources', () => context.push('/admin/resources')),
         _buildControlCard(context, Icons.check_box_outlined, 'Quiz Control', () => context.push('/admin/quizzes')),
+        _buildControlCard(context, Icons.cloud_upload_outlined, 'Create Submissions', () => context.push('/admin/create-submission')),
         _buildControlCard(context, Icons.rate_review_outlined, 'Reviews', () => context.push('/admin/submissions').then((_) {
           ref.invalidate(adminOverviewProvider);
           for (final id in _expandedStudentIds) {
@@ -205,24 +202,32 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
   }
 
   Widget _buildControlCard(BuildContext context, IconData icon, String label, VoidCallback onTap) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: Colors.grey.withOpacity(0.15)),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 8),
-              Flexible(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
-            ],
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+    final itemWidth = isPortrait ? (screenWidth - 42) / 2 : (screenWidth - 62) / 4;
+
+    return SizedBox(
+      width: itemWidth,
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: Colors.grey.withOpacity(0.15)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Flexible(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12), overflow: TextOverflow.ellipsis)),
+              ],
+            ),
           ),
         ),
       ),
@@ -252,9 +257,19 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 title: Text(student['fullName']),
                 subtitle: Text(student['email'] ?? student['phone'] ?? ''),
                 trailing: isPending
-                    ? ElevatedButton(
-                        onPressed: () => _approveStudent(studentId, ref),
-                        child: const Text('APPROVE'),
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () => _approveStudent(studentId, ref),
+                            child: const Text('APPROVE'),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () => _removeStudent(context, studentId, student['fullName'], ref),
+                          ),
+                        ],
                       )
                     : Row(
                         mainAxisSize: MainAxisSize.min,
@@ -316,6 +331,11 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                         icon: const Icon(Icons.email_outlined, size: 16),
                         label: const Text('Parent Report'),
                         onPressed: () => _emailReport(context, studentId, student['parentEmail']),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                        label: const Text('Remove', style: TextStyle(color: Colors.red)),
+                        onPressed: () => _removeStudent(context, studentId, student['fullName'], ref),
                       ),
                     ],
                   ),
@@ -468,7 +488,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
                 ),
                 const SizedBox(height: 6),
                 ...quizResultsList.take(2).map((res) {
-                  final title = res['quizId']?['title'] ?? 'Study Quiz';
+                  final title = (res['quizId'] is Map) ? (res['quizId']['title'] ?? 'Study Quiz') : 'Study Quiz';
                   final score = res['score'] ?? 0;
                   final totalQ = res['totalQuestions'] ?? 0;
                   final percentage = totalQ > 0 ? (score / totalQ) * 100 : 0;
@@ -677,9 +697,40 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         });
         Fluttertoast.showToast(msg: "Feedback submitted successfully!", backgroundColor: Colors.green);
         ref.invalidate(adminOverviewProvider);
-        ref.invalidate(studentAnalyticsProvider(sub['studentId']?['_id'] ?? ''));
+        final String targetStudentId = (sub['studentId'] is Map) ? (sub['studentId']['_id'] ?? '') : (sub['studentId'] ?? '');
+        ref.invalidate(studentAnalyticsProvider(targetStudentId));
       } catch (e) {
         Fluttertoast.showToast(msg: "Failed to save feedback: $e", backgroundColor: Colors.red);
+      }
+    }
+  }
+
+  Future<void> _removeStudent(BuildContext context, String studentId, String fullName, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Student Account?'),
+        content: Text('Are you sure you want to permanently delete $fullName\'s account and all associated data? This action cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('REMOVE'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final api = ApiClient();
+        await api.dio.delete('/auth/students/$studentId');
+        Fluttertoast.showToast(msg: "Student removed successfully", backgroundColor: Colors.green);
+        ref.invalidate(studentsProvider);
+        ref.invalidate(adminOverviewProvider);
+      } catch (e) {
+        Fluttertoast.showToast(msg: "Failed to remove student: $e", backgroundColor: Colors.red);
       }
     }
   }
